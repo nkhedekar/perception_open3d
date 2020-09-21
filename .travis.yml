@@ -9,7 +9,7 @@ cache:
 
 env:
   global:
-    - ROS_DISTRO="melodic"
+    - ROS_DISTRO="kinetic"
     - ROS_REPO=ros
     - CCACHE_DIR=$HOME/.ccache
     # To avoid memory error on Travis.
@@ -19,10 +19,18 @@ env:
     - VERBOSE_OUTPUT=true
     - VERBOSE_TESTS=true
   matrix:
-    - OS_NAME=ubuntu OS_CODE_NAME=bionic
-    - OS_NAME=debian OS_CODE_NAME=stretch
+    - OS_NAME=ubuntu OS_CODE_NAME=xenial
+    - OS_NAME=debian OS_CODE_NAME=jessie
 
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+  - git clone --recursive https://github.com/intel-isl/Open3D
+  - cd Open3D && git submodule update --init --recursive
+  - source util/install_deps_ubuntu.sh
+  - mkdir build && cd build
+  - cmake -DBUILD_UNIT_TESTS=ON -DBUILD_EIGEN3=ON -DBUILD_GLEW=ON -DBUILD_GLFW=ON -DBUILD_JSONCPP=ON -DBUILD_PNG=ON -DGLIBCXX_USE_CXX11_ABI=ON -DPYTHON_EXECUTABLE=/usr/bin/python ..
+  - make -j8
+  - sudo make install
+
 script:
   - .industrial_ci/travis.sh
